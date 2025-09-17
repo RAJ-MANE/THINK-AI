@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced ATS Resume Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.16/mammoth.browser.min.js"></script>
+    <style>
+      :root {
+        --primary-theme: #8707ff; /* Purple */
+        --primary-theme-light: #f3e8ff; /* Light purple for backgrounds */
+        --primary-theme-dark: #6d00d1; /* Darker purple for hover */
+        --accent-pink: #e21563;
+        --accent-blue: #0075ff;
+        --background-light: #f7f7f9;
+        --card-background: #ffffff;
+        --text-dark: #111827;
+        --text-light: #6b7280;
+        --border-color: #e5e7eb;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--background-light);
+        color: var(--text-dark);
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-image: url("https://images.unsplash.com/photo-1550745165-9bc0b252726a?q=80&w=2070&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        opacity: 0.15;
+        z-index: -1;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .mode-button.mode-selected {
+        border-color: var(--primary-indigo);
+        background-color: #eef2ff;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+      }
+
+      #score-gauge-circle-progress {
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+      }
+
+      .analysis-item {
+        opacity: 0;
+        animation: fadeInUp 0.5s ease-out forwards;
+      }
+
+      .detailed-analysis {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+      }
+
+      .text-gradient {
+        background: linear-gradient(
+          to right,
+          var(--accent-pink),
+          var(--primary-theme)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-fill-color: transparent;
+      }
+
+      /* --- NEW THEME OVERRIDES --- */
+
+      /* Buttons & Selections */
+      .mode-button.mode-selected {
+        border-color: var(--primary-theme) !important;
+        background-color: var(--primary-theme-light) !important;
+        box-shadow: 0 0 0 2px rgba(135, 7, 255, 0.2) !important;
+      }
+      .mode-button.border-gray-700:hover {
+        border-color: var(--primary-theme) !important;
+      }
+      #check-score-btn {
+        background-color: var(--primary-theme) !important;
+        box-shadow: 0 4px 14px 0 rgba(135, 7, 255, 0.39) !important;
+      }
+      #check-score-btn:hover {
+        background-color: var(--primary-theme-dark) !important;
+      }
+
+      /* Tabs */
+      nav button.border-indigo-600 {
+        /* Target the active tab class */
+        color: var(--accent-blue) !important;
+        border-color: var(--accent-blue) !important;
+      }
+
+      /* Upload Panel */
+      #panel-upload label {
+        background-color: var(--primary-theme-light) !important;
+        color: var(--primary-theme) !important;
+        border-color: rgba(135, 7, 255, 0.3) !important;
+      }
+      #panel-upload label:hover {
+        background-color: #e9d5ff !important;
+        border-color: var(--primary-theme) !important;
+      }
+      #panel-upload label svg {
+        color: rgba(135, 7, 255, 0.4) !important;
+      }
+
+      /* Textareas */
+      textarea:focus {
+        --tw-ring-color: var(--primary-theme) !important;
+        border-color: var(--primary-theme) !important;
+      }
+
+      /* Results Gauge */
+      #score-gauge-circle-progress,
+      #overall-score {
+        color: var(--accent-pink) !important;
+      }
+
+      /* --- DARK THEME OVERRIDES --- */
+      body {
+        background-color: #0a0a0a !important;
+        color: #fff !important;
+        font-family: "Mona Sans", "Inter", sans-serif !important;
+      }
+
+      .bg-white,
+      .rounded-xl,
+      .shadow-lg,
+      .card-background {
+        background-color: #1a1a1a !important;
+        color: #fff !important;
+        border-color: #333 !important;
+      }
+
+      header nav {
+        background: #0a0a0a !important;
+        border-bottom: 1px solid #333 !important;
+      }
+
+      .logo {
+        color: #fff !important;
+        font-family: "Mona Sans", "Inter", sans-serif !important;
+        font-weight: 800;
+        font-size: 1.5rem;
+        letter-spacing: 2px;
+      }
+
+      nav a {
+        color: #fff !important;
+        font-weight: 500;
+        transition: color 0.3s;
+        text-decoration: none;
+      }
+      nav a:hover {
+        color: #a0a0a0 !important;
+      }
+
+      .text-gradient,
+      .rainbow-text {
+        background: linear-gradient(
+          90deg,
+          #ff0000,
+          #ff7300,
+          #fffb00,
+          #48ff00,
+          #00ffd5,
+          #002bff,
+          #7a00ff,
+          #ff00c8,
+          #ff0000
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 200% auto;
+        animation: rainbow-animation 5s linear infinite;
+      }
+      @keyframes rainbow-animation {
+        to {
+          background-position: 200% center;
+        }
+      }
+
+      textarea,
+      input[type="file"] {
+        background-color: #181818 !important;
+        color: #fff !important;
+        border: 1px solid #333 !important;
+        border-radius: 8px !important;
+        font-family: "Mona Sans", "Inter", sans-serif !important;
+        font-size: 1rem !important;
+      }
+
+      .analysis-item {
+        background-color: #222 !important;
+        color: #fff !important;
+        border-radius: 8px !important;
+      }
+
+      .detailed-analysis {
+        background-color: #181818 !important;
+        color: #fff !important;
+      }
+
+      #results-placeholder,
+      #results-content,
+      #keyword-analysis-section {
+        background-color: #181818 !important;
+        color: #fff !important;
+        border-color: #333 !important;
+      }
+
+      #error-message {
+        background-color: #2a2a2a !important;
+        color: #ff4d4d !important;
+        border-color: #ff4d4d !important;
+      }
+
+      /* --- Rainbow Button (copied from style.css) --- */
+      .animated-rainbow-button {
+        all: unset;
+        background: transparent;
+        border-width: 0;
+        transform: scale(var(--btn-scale, 1));
+        transition: --bg-position 3s ease, --after-blur 0.3s ease,
+          --before-opacity 0.3s ease, --btn-offset 0.3s ease,
+          --btn-scale 0.2s cubic-bezier(0.76, -0.25, 0.51, 1.13);
+        margin-top: 1rem;
+      }
+      .animated-rainbow-button > div {
+        display: block;
+        padding: 0.8em 1.2em;
+        background: #0a0a0a;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        font-size: 22px;
+        position: relative;
+        cursor: pointer;
+      }
+      .animated-rainbow-button > div:not(:hover) {
+        transition: --after-blur 0.3s ease;
+      }
+      .animated-rainbow-button > div > span {
+        background: linear-gradient(
+            to right,
+            #fff,
+            #fff,
+            #00fff7,
+            #002bff,
+            #7a00ff,
+            #ff00c8,
+            #ff0000,
+            #fffb00,
+            #48ff00,
+            #fff,
+            #fff
+          )
+          no-repeat calc(var(--bg-position, 100) * 1%) 0% / 900%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 0.15ch;
+        font-weight: 600;
+      }
+      .animated-rainbow-button > div:after {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, #0a0a0a, #0a0a0a) no-repeat
+          calc(var(--bg-position, 100) * 1%) 0% / 900%;
+        transform: translateY(10px);
+        left: 0;
+        top: 0;
+        z-index: -2;
+        filter: blur(10px);
+        opacity: 1;
+      }
+      .animated-rainbow-button > div:before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: calc(100% + 3px);
+        height: calc(100% + 3px);
+        background: linear-gradient(
+            to right,
+            #fff,
+            #fff,
+            #00fff7,
+            #002bff,
+            #7a00ff,
+            #ff00c8,
+            #ff0000,
+            #fffb00,
+            #48ff00,
+            #fff,
+            #fff
+          )
+          no-repeat calc(var(--bg-position, 100) * 1%) 0% / 900%;
+        border-radius: 9px;
+        z-index: -1;
+        top: -1.5px;
+        left: -1.5px;
+        opacity: 0.3;
+      }
+      .animated-rainbow-button:hover {
+        --btn-scale: 1.05;
+        --bg-position: 0;
+      }
+      .animated-rainbow-button:active {
+        --btn-scale: 0.98;
+      }
+
+      /* --- Pills --- */
+      #matched-keywords span,
+      #missing-keywords span {
+        border-radius: 6px !important;
+        padding: 0.3em 0.8em !important;
+        font-size: 0.95em !important;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+
+    <header class="relative z-20 py-3 px-6 bg-black/20 backdrop-blur-sm border-b border-white/10">
+        <div class="container mx-auto flex justify-between items-center max-w-[900px] px-0">
+            <div class="flex items-center space-x-3">
+                <h1 class="text-xl font-extrabold text-white tracking-wider">IMPROVYU</h1>
+            </div>
+            <a href="index.html" class="bg-white/10 hover:bg-white/20 text-white font-semibold py-1.5 px-3 rounded-lg text-sm transition">Back to Home</a>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 pt-8 pb-12">
+      <header class="text-center mb-10">
+        <h1
+          class="text-4xl md:text-5xl font-extrabold leading-tight text-gradient"
+        >
+          AI Powered ATS Resume Score Checker
+        </h1>
+        <p class="mt-3 text-lg text-gray-300 max-w-2xl mx-auto">
+          Instantly score your resume against any job description and get
+          actionable feedback.
+        </p>
+      </header>
+
+      <div class="flex flex-col items-center gap-8 lg:gap-12 w-full">
+        <main class="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-4xl">
+          <div class="flex flex-col gap-8">
+            <div>
+              <h2 class="text-lg font-semibold text-white">
+                1. Choose Analysis Type
+              </h2>
+              <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button
+                  id="mode-match-jd"
+                  class="mode-button mode-selected border-2 border-transparent rounded-lg p-4 text-left transition-all"
+                >
+                  <h3 class="font-semibold text-sm text-gray-900">
+                    Resume + Job Description
+                  </h3>
+                </button>
+                <button
+                  id="mode-resume-only"
+                  class="mode-button border-2 border-gray-700 rounded-lg p-4 text-left hover:border-[var(--primary-theme)] transition-all"
+                >
+                  <h3 class="font-semibold text-sm text-gray-100">
+                    Resume-Only Check
+                  </h3>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h2 class="text-lg font-semibold text-white">
+                2. Provide Your Resume
+              </h2>
+              <div class="mt-3">
+                <div class="border-b border-gray-700">
+                  <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                    <button
+                      id="tab-upload"
+                      class="whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm text-indigo-600 border-indigo-600"
+                    >
+                      Upload File
+                    </button>
+                    <button
+                      id="tab-paste"
+                      class="whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm text-gray-400 hover:text-white hover:border-gray-500 border-transparent"
+                    >
+                      Paste Text
+                    </button>
+                  </nav>
+                </div>
+                <div id="panel-upload" class="pt-4">
+                  <label
+                    for="resume-upload"
+                    class="relative cursor-pointer bg-indigo-50 rounded-lg text-indigo-700 hover:bg-indigo-100 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 border-2 border-dashed border-indigo-200 hover:border-indigo-400 p-6 flex flex-col items-center justify-center w-full h-40 transition-colors"
+                  >
+                    <svg
+                      class="h-10 w-10 text-indigo-300"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                      />
+                    </svg>
+                    <span class="mt-2 block text-sm font-medium"
+                      >Upload a file (PDF or DOCX)</span
+                    >
+                    <input
+                      id="resume-upload"
+                      type="file"
+                      class="sr-only"
+                      accept=".pdf,.docx"
+                    />
+                  </label>
+                  <p id="file-name" class="mt-2 text-sm text-gray-400 h-5"></p>
+                </div>
+                <div id="panel-paste" class="hidden pt-4">
+                  <textarea
+                    id="resume"
+                    class="w-full p-3 h-40 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                    placeholder="Paste the full text of your resume here..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div id="job-description-wrapper">
+              <h2 class="text-lg font-semibold text-white">
+                3. Paste the Job Description
+              </h2>
+              <textarea
+                id="job-description"
+                class="mt-3 w-full p-3 h-40 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                placeholder="Paste the full job description here..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="text-center mt-6">
+            <button
+              id="check-score-btn"
+              class="bg-indigo-600 text-white font-bold text-base w-full py-3 px-8 rounded-lg hover:bg-indigo-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-md hover:shadow-lg"
+            >
+              <span id="btn-text">Analyze My Resume</span>
+            </button>
+          </div>
+        </main>
+
+        <section id="results-section" class="w-full max-w-4xl">
+          <div
+            id="results-placeholder"
+            class="bg-white rounded-xl shadow-lg p-6 md:p-8 flex flex-col items-center justify-center text-center h-full min-h-[500px] border-2 border-dashed border-gray-600"
+          >
+            <svg
+              class="w-16 h-16 text-gray-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
+              />
+            </svg>
+            <h3 class="mt-4 text-xl font-bold text-white">
+              Your Report Awaits
+            </h3>
+            <p class="mt-2 text-sm text-gray-400 max-w-xs">
+              Complete the form and click "Analyze" to see your resume's score
+              and feedback here.
+            </p>
+          </div>
+
+          <div
+            id="results-content"
+            class="hidden bg-white rounded-xl shadow-lg p-6 md:p-8"
+          >
+            <h2 class="text-2xl font-bold text-center text-white mb-6">
+              Analysis Report
+            </h2>
+
+            <div class="flex flex-col items-center text-center">
+              <div class="relative w-48 h-48">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                  <circle
+                    class="text-gray-700"
+                    stroke-width="10"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="45"
+                    cx="50"
+                    cy="50"
+                  />
+                  <circle
+                    id="score-gauge-circle-progress"
+                    stroke-width="10"
+                    stroke-linecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="45"
+                    cx="50"
+                    cy="50"
+                    transform="rotate(-90 50 50)"
+                  />
+                </svg>
+                <div
+                  id="overall-score-container"
+                  class="absolute inset-0 flex flex-col items-center justify-center"
+                >
+                  <span id="overall-score" class="text-5xl font-extrabold"
+                    >0</span
+                  >
+                </div>
+              </div>
+              <p
+                id="overall-message"
+                class="text-lg font-medium text-gray-300 mt-4 max-w-xs"
+              >
+                Your resume's match score.
+              </p>
+            </div>
+
+            <div id="analysis-grid" class="mt-8 space-y-4">
+              </div>
+
+            <div
+              id="keyword-analysis-section"
+              class="hidden mt-6 pt-6 border-t border-gray-700"
+            >
+              <h3 class="text-lg font-bold text-white mb-4">
+                Keyword Analysis
+              </h3>
+              <div class="space-y-4">
+                <div>
+                  <h4 class="text-sm font-semibold text-green-400">
+                    Matched Keywords
+                  </h4>
+                  <div
+                    id="matched-keywords"
+                    class="flex flex-wrap gap-2 mt-2"
+                  ></div>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-red-400">
+                    Missing Keywords
+                  </h4>
+                  <div
+                    id="missing-keywords"
+                    class="flex flex-wrap gap-2 mt-2"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div
+          id="error-message"
+          class="hidden w-full max-w-4xl mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center"
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      // --- State ---
+      let currentMode = "match-jd";
+
+      // --- DOM Elements ---
+      const modeMatchBtn = document.getElementById("mode-match-jd");
+      const modeResumeOnlyBtn = document.getElementById("mode-resume-only");
+      const jobDescWrapper = document.getElementById("job-description-wrapper");
+      const tabUpload = document.getElementById("tab-upload");
+      const tabPaste = document.getElementById("tab-paste");
+      const panelUpload = document.getElementById("panel-upload");
+      const panelPaste = document.getElementById("panel-paste");
+      const resumeUploadInput = document.getElementById("resume-upload");
+      const fileNameDisplay = document.getElementById("file-name");
+      const resumeTextarea = document.getElementById("resume");
+      const jobDescTextarea = document.getElementById("job-description");
+      const checkScoreBtn = document.getElementById("check-score-btn");
+      const btnText = document.getElementById("btn-text");
+      const resultsSection = document.getElementById("results-section");
+      const resultsPlaceholder = document.getElementById("results-placeholder");
+      const resultsContent = document.getElementById("results-content");
+      const errorElement = document.getElementById("error-message");
+      const overallScoreEl = document.getElementById("overall-score");
+      const overallMessageEl = document.getElementById("overall-message");
+      const analysisGrid = document.getElementById("analysis-grid");
+      const keywordSection = document.getElementById(
+        "keyword-analysis-section"
+      );
+      const scoreGaugeProgress = document.getElementById(
+        "score-gauge-circle-progress"
+      );
+
+      // --- Initial Setup ---
+      modeMatchBtn.addEventListener("click", () => setMode("match-jd"));
+      modeResumeOnlyBtn.addEventListener("click", () => setMode("resume-only"));
+      tabUpload.addEventListener("click", () => switchTab("upload"));
+      tabPaste.addEventListener("click", () => switchTab("paste"));
+      resumeUploadInput.addEventListener("change", handleFileUpload);
+      checkScoreBtn.addEventListener("click", handleAnalysis);
+
+      // --- Core Functions (setMode, switchTab, file handling) ---
+      
+      function setMode(mode) {
+        currentMode = mode;
+        const isMatchJdMode = mode === 'match-jd';
+
+        // Toggle button container styles (background, border)
+        modeMatchBtn.classList.toggle('mode-selected', isMatchJdMode);
+        modeMatchBtn.classList.toggle('border-gray-700', !isMatchJdMode);
+        modeResumeOnlyBtn.classList.toggle('mode-selected', !isMatchJdMode);
+        modeResumeOnlyBtn.classList.toggle('border-gray-700', isMatchJdMode);
+
+        // Get the h3 elements inside the buttons
+        const matchJdText = modeMatchBtn.querySelector('h3');
+        const resumeOnlyText = modeResumeOnlyBtn.querySelector('h3');
+
+        // Toggle text color classes based on selection
+        // Selected button gets dark text for its light background.
+        // Unselected button gets light text for the dark card background.
+        if (isMatchJdMode) {
+            matchJdText.classList.remove('text-gray-100');
+            matchJdText.classList.add('text-gray-900');
+            resumeOnlyText.classList.remove('text-gray-900');
+            resumeOnlyText.classList.add('text-gray-100');
+        } else {
+            matchJdText.classList.remove('text-gray-900');
+            matchJdText.classList.add('text-gray-100');
+            resumeOnlyText.classList.remove('text-gray-100');
+            resumeOnlyText.classList.add('text-gray-900');
+        }
+
+        jobDescWrapper.classList.toggle('hidden', mode !== 'match-jd');
+      }
+
+      function switchTab(tab) {
+        const isUpload = tab === "upload";
+        tabUpload.classList.toggle("text-indigo-600", isUpload);
+        tabUpload.classList.toggle("border-indigo-600", isUpload);
+        tabUpload.classList.toggle("text-gray-400", !isUpload);
+        tabUpload.classList.toggle("border-transparent", !isUpload);
+        tabPaste.classList.toggle("text-indigo-600", !isUpload);
+        tabPaste.classList.toggle("border-indigo-600", !isUpload);
+        tabPaste.classList.toggle("text-gray-400", isUpload);
+        tabPaste.classList.toggle("border-transparent", isUpload);
+        panelUpload.classList.toggle("hidden", !isUpload);
+        panelPaste.classList.toggle("hidden", isUpload);
+      }
+
+      async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        fileNameDisplay.textContent = `Processing: ${file.name}`;
+        btnText.textContent = "Processing File...";
+        checkScoreBtn.disabled = true;
+        try {
+          let text = "";
+          if (file.type === "application/pdf") text = await parsePdf(file);
+          else if (
+            file.type ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          )
+            text = await parseDocx(file);
+          else throw new Error("Unsupported file type.");
+          resumeTextarea.value = text;
+          fileNameDisplay.textContent = `Ready: ${file.name}`;
+        } catch (error) {
+          showError(`Error: ${error.message}`);
+          fileNameDisplay.textContent = "";
+          resumeTextarea.value = "";
+        } finally {
+          checkScoreBtn.disabled = false;
+          btnText.textContent = "Analyze My Resume";
+        }
+      }
+
+      async function parsePdf(file) {
+        const reader = new FileReader();
+        return new Promise((resolve, reject) => {
+          reader.onload = async (event) => {
+            try {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
+              const pdf = await pdfjsLib.getDocument({
+                data: event.target.result,
+              }).promise;
+              let text = "";
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                text += content.items.map((item) => item.str).join(" ");
+              }
+              resolve(text);
+            } catch (error) {
+              reject(error);
+            }
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+      async function parseDocx(file) {
+        const reader = new FileReader();
+        return new Promise((resolve, reject) => {
+          reader.onload = async (event) => {
+            const result = await mammoth.extractRawText({
+              arrayBuffer: event.target.result,
+            });
+            resolve(result.value);
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+
+      // --- Analysis Logic ---
+      const stopWords = new Set([
+        "a",
+        "about",
+        "all",
+        "an",
+        "and",
+        "any",
+        "are",
+        "as",
+        "at",
+        "be",
+        "by",
+        "for",
+        "from",
+        "how",
+        "i",
+        "if",
+        "in",
+        "is",
+        "it",
+        "of",
+        "on",
+        "or",
+        "so",
+        "that",
+        "the",
+        "their",
+        "this",
+        "to",
+        "was",
+        "we",
+        "were",
+        "what",
+        "when",
+        "which",
+        "with",
+        "would",
+        "you",
+        "your",
+        "experience",
+        "skills",
+        "education",
+      ]);
+      const hardSkills = new Set([
+        "javascript",
+        "python",
+        "java",
+        "c++",
+        "sql",
+        "html",
+        "css",
+        "react",
+        "angular",
+        "vue",
+        "node.js",
+        "aws",
+        "azure",
+        "gcp",
+        "docker",
+        "kubernetes",
+        "tensorflow",
+        "pytorch",
+        "scikit-learn",
+        "pandas",
+        "numpy",
+        "git",
+        "jira",
+        "agile",
+        "scrum",
+        "seo",
+        "sem",
+        "google analytics",
+        "adobe creative suite",
+        "figma",
+        "sketch",
+      ]);
+      const softSkills = new Set([
+        "communication",
+        "teamwork",
+        "leadership",
+        "problem-solving",
+        "creativity",
+        "adaptability",
+        "work ethic",
+        "time management",
+        "collaboration",
+        "critical thinking",
+        "interpersonal skills",
+        "emotional intelligence",
+      ]);
+      const WEIGHTS = {
+        keywords: 30,
+        skills: 25,
+        experience: 20,
+        formatting: 10,
+        education: 10,
+        achievements: 5,
+      };
+
+      function handleAnalysis() {
+        const resumeText = resumeTextarea.value;
+        const jobDescText = jobDescTextarea.value;
+        hideError();
+        resultsContent.classList.add("hidden");
+        resultsPlaceholder.classList.remove("hidden");
+
+        if (
+          !resumeText.trim() ||
+          (currentMode === "match-jd" && !jobDescText.trim())
+        ) {
+          showError("Please provide your resume and the job description.");
+          return;
+        }
+
+        btnText.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analyzing...`;
+        checkScoreBtn.disabled = true;
+
+        setTimeout(() => {
+          try {
+            const analysis = runFullAnalysis(
+              resumeText,
+              jobDescText,
+              currentMode
+            );
+            displayResults(analysis, currentMode);
+            resultsSection.scrollIntoView({ behavior: "smooth" });
+          } catch (error) {
+            showError("An unexpected error occurred during analysis.");
+            console.error(error);
+          }
+          btnText.textContent = "Analyze Again";
+          checkScoreBtn.disabled = false;
+        }, 1500);
+      }
+
+      function sectionizeResume(text) {
+        const sections = {};
+        const sectionHeaders = {
+          summary: /^(summary|profile|objective)/im,
+          experience:
+            /^(experience|work experience|professional experience|employment history)/im,
+          education: /^(education|academic background|qualifications)/im,
+          skills: /^(skills|technical skills|core competencies)/im,
+        };
+        const lines = text.split("\n");
+        let currentSection = "header";
+        sections[currentSection] = "";
+
+        lines.forEach((line) => {
+          let foundSection = false;
+          for (const sectionName in sectionHeaders) {
+            if (sectionHeaders[sectionName].test(line)) {
+              currentSection = sectionName;
+              if (!sections[currentSection]) sections[currentSection] = "";
+              foundSection = true;
+              break;
+            }
+          }
+          if (sections[currentSection] !== undefined) {
+            sections[currentSection] += line + "\n";
+          }
+        });
+        sections.fullText = text;
+        return sections;
+      }
+      function runFullAnalysis(resume, jobDesc, mode) {
+        const sections = sectionizeResume(resume);
+        const results = {};
+
+        results.achievements = scoreAchievements(sections.fullText);
+        results.experience = scoreExperience(
+          sections.experience || sections.fullText
+        );
+        results.education = scoreEducation(
+          sections.education || sections.fullText
+        );
+        results.formatting = scoreFormatting(sections);
+
+        if (mode === "match-jd") {
+          const jdTokens = new Set(
+            jobDesc
+              .toLowerCase()
+              .replace(/[^\w\s]/g, " ")
+              .split(/\s+/)
+              .filter((word) => word && !stopWords.has(word) && isNaN(word))
+          );
+          results.keywords = scoreKeywords(sections.fullText, jdTokens);
+          results.skills = scoreSkills(
+            sections.skills || sections.fullText,
+            jdTokens
+          );
+        } else {
+          results.skills = scoreSkills(
+            sections.skills || sections.fullText,
+            new Set()
+          );
+          results.keywords = {
+            score: 80,
+            matched: { all: [] },
+            missing: { all: [] },
+          };
+        }
+
+        let totalWeightedScore = 0;
+        totalWeightedScore += (results.keywords.score / 100) * WEIGHTS.keywords;
+        totalWeightedScore += (results.skills.score / 100) * WEIGHTS.skills;
+        totalWeightedScore +=
+          (results.experience.score / 100) * WEIGHTS.experience;
+        totalWeightedScore +=
+          (results.formatting.score / 100) * WEIGHTS.formatting;
+        totalWeightedScore +=
+          (results.education.score / 100) * WEIGHTS.education;
+        totalWeightedScore +=
+          (results.achievements.score / 100) * WEIGHTS.achievements;
+
+        results.overallScore = Math.round(totalWeightedScore);
+        return results;
+      }
+      function scoreKeywords(resumeText, jdTokens) {
+        if (jdTokens.size === 0)
+          return { score: 80, matched: { all: [] }, missing: { all: [] } };
+        const resumeTokens = new Set(
+          resumeText
+            .toLowerCase()
+            .replace(/[^\w\s]/g, " ")
+            .split(/\s+/)
+            .filter((word) => word && !stopWords.has(word) && isNaN(word))
+        );
+
+        const matched = { all: [] };
+        const missing = { all: [] };
+
+        jdTokens.forEach((keyword) => {
+          if (keyword.length < 3) return;
+          if (resumeTokens.has(keyword)) matched.all.push(keyword);
+          else missing.all.push(keyword);
+        });
+        const score =
+          jdTokens.size > 0
+            ? Math.round((matched.all.length / jdTokens.size) * 100)
+            : 0;
+        return { score, matched, missing };
+      }
+      function scoreSkills(skillsText, jdTokens) {
+        const skillRegex = /[a-zA-Z\s,]+/g;
+        const skillsFound = (skillsText.match(skillRegex) || []).length > 5;
+        let score = skillsFound ? 70 : 30;
+        if (jdTokens.size > 0) {
+          const skillTokens = new Set(skillsText.toLowerCase().split(/\s+/));
+          const matchedInSkills = [...jdTokens].filter((t) =>
+            skillTokens.has(t)
+          ).length;
+          score = Math.min(100, score + matchedInSkills * 5);
+        }
+        return { score };
+      }
+      function scoreExperience(expText) {
+        const dateRegex =
+          /(\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Present|Current)\b.?,?\s\d{4}|\b\d{4}\s?-\s?\d{4}\b)/gi;
+        const jobTitleRegex =
+          /\b(manager|engineer|developer|analyst|specialist|consultant|director|lead)\b/i;
+        const datesFound = (expText.match(dateRegex) || []).length;
+        const titlesFound = (expText.match(jobTitleRegex) || []).length;
+        let score =
+          20 + Math.min(40, datesFound * 20) + Math.min(40, titlesFound * 20);
+        return { score, datesFound, titlesFound };
+      }
+      function scoreFormatting(sections) {
+        let passedChecks = 0;
+        const totalChecks = 4;
+        if (sections.experience) passedChecks++;
+        if (sections.education) passedChecks++;
+        if (sections.skills) passedChecks++;
+        const longLine = sections.fullText
+          .split("\n")
+          .some((line) => line.length > 150);
+        if (!longLine) passedChecks++;
+        return { score: Math.round((passedChecks / totalChecks) * 100) };
+      }
+      function scoreEducation(eduText) {
+        const degreeRegex =
+          /\b(Bachelor|Master|PhD|B\.S|M\.S|B\.A|MBA|Associate)\b/i;
+        const found = degreeRegex.test(eduText);
+        return { score: found ? 100 : 40, found };
+      }
+      function scoreAchievements(resumeText) {
+        const metricsRegex = /(\d+%|\$\d+[\.,]?\d*[kKmM]?|\b\d{3,}\b)/g;
+        const foundCount = (resumeText.match(metricsRegex) || []).length;
+        const score = Math.min(100, foundCount * 25);
+        return { score, foundCount };
+      }
+
+      // --- Display Logic ---
+      function displayResults(analysis, mode) {
+        const circumference = 2 * Math.PI * 45;
+        const offset =
+          circumference - (analysis.overallScore / 100) * circumference;
+        scoreGaugeProgress.style.strokeDashoffset = offset;
+
+        animateValue(overallScoreEl, 0, analysis.overallScore, 1500);
+
+        if (analysis.overallScore >= 85)
+          overallMessageEl.textContent =
+            "Excellent! Your resume is a strong match.";
+        else if (analysis.overallScore >= 70)
+          overallMessageEl.textContent =
+            "Great start! A few tweaks will make you stand out.";
+        else
+          overallMessageEl.textContent =
+            "Needs improvement. See recommendations below.";
+
+        analysisGrid.innerHTML = "";
+
+        const cards = {
+          keywords: {
+            title: "Keyword Match",
+            getMessage: (data) =>
+              `Matches ${data.score}% of keywords from the job description.`,
+            getDetailedMessage: (data) => {
+              if (data.score >= 80)
+                return `<p class='text-xs text-gray-400'><strong>Why it's good:</strong> Your resume effectively uses language found in the job description, crucial for passing the initial ATS scan.</p><p class='text-xs text-gray-400 mt-2'><strong>Tip:</strong> Ensure the most important keywords appear in the context of your work experience, not just in a skills list.</p>`;
+              return `<p class='text-xs text-gray-400'><strong>Why it matters:</strong> Applicant Tracking Systems (ATS) scan for specific keywords from the job description to rank candidates. A low match score can lead to your resume being automatically rejected.</p><p class='text-xs text-gray-400 mt-2'><strong>How to fix it:</strong> Review the "Missing Keywords" below. Integrate them naturally into your resume's summary and experience bullet points where they align with your skills.</p>`;
+            },
+          },
+          skills: {
+            title: "Skills Section",
+            getMessage: (data) =>
+              data.score > 60
+                ? `A well-defined skills section was found.`
+                : `Your skills section could be clearer.`,
+            getDetailedMessage: (data) => {
+              if (data.score > 60)
+                return `<p class='text-xs text-gray-400'><strong>Why it's good:</strong> You have a dedicated skills section, making it easy for ATS and recruiters to quickly assess your qualifications.</p><p class='text-xs text-gray-400 mt-2'><strong>Tip:</strong> Consider categorizing skills (e.g., 'Programming Languages', 'Tools') for better readability.</p>`;
+              return `<p class='text-xs text-gray-400'><strong>Why it matters:</strong> Without a clearly labeled 'Skills' or 'Technical Skills' section, the ATS might not correctly parse your abilities, and recruiters might miss your qualifications during their 6-second scan.</p><p class='text-xs text-gray-400 mt-2'><strong>How to fix it:</strong> Create a distinct section with the heading "Skills". List your relevant hard and soft skills using bullet points or a comma-separated list.</p>`;
+            },
+          },
+          experience: {
+            title: "Work Experience",
+            getMessage: (data) =>
+              data.score > 60
+                ? `Your work history is clearly detailed.`
+                : `Make job titles and dates more prominent.`,
+            getDetailedMessage: (data) => {
+              if (data.score > 60)
+                return `<p class='text-xs text-gray-400'><strong>Why it's good:</strong> Your experience section format appears clear, with distinct job titles and dates that an ATS can easily parse.</p>`;
+              return `<p class='text-xs text-gray-400'><strong>Why it matters:</strong> ATS parsers rely on consistent formatting to understand your career timeline. If job titles, company names, and dates are not clear, the system may misinterpret your work history.</p><p class='text-xs text-gray-400 mt-2'><strong>How to fix it:</strong> Use a standard format for each role. For example:<br><strong>Job Title</strong>, Company Name — <em>City, State</em><br><em>Month Year – Month Year</em></p>`;
+            },
+          },
+          formatting: {
+            title: "ATS Formatting",
+            getMessage: (data) =>
+              data.score > 80
+                ? "Your resume format is ATS-friendly."
+                : "Your formatting may not be ATS-compatible.",
+            getDetailedMessage: (data) => {
+              if (data.score > 80)
+                return `<p class='text-xs text-gray-400'><strong>Why it's good:</strong> Your resume likely uses a clean, single-column layout with standard fonts, ensuring an ATS can read all content accurately.</p>`;
+              return `<p class='text-xs text-gray-400'><strong>Why it matters:</strong> ATS are simple text parsers. They cannot read text inside images, text boxes, or tables. Multi-column layouts can also confuse the parser, jumbling your information.</p><p class='text-xs text-gray-400 mt-2'><strong>How to fix it:</strong> Stick to a single-column format. Use standard fonts like Arial or Calibri. Avoid putting crucial info in the header or footer.</p>`;
+            },
+          },
+          education: {
+            title: "Education",
+            getMessage: (data) =>
+              data.found
+                ? "Your education section is clear."
+                : "Your degree information could be missed.",
+            getDetailedMessage: (data) => {
+              if (data.found)
+                return `<p class='text-xs text-gray-400'><strong>Why it's good:</strong> Your resume clearly states your degree, a key qualification that ATS and recruiters look for.</p>`;
+              return `<p class='text-xs text-gray-400'><strong>Why it matters:</strong> Many jobs have minimum education requirements. If an ATS cannot find a recognizable degree (e.g., "Bachelor of Science", "B.A."), it may incorrectly flag you as unqualified.</p><p class='text-xs text-gray-400 mt-2'><strong>How to fix it:</strong> Ensure you have a section titled "Education". Spell out your degree and major clearly. For example: "Bachelor of Science in Computer Science".</p>`;
+            },
+          },
+          achievements: {
+            title: "Impact & Metrics",
+            getMessage: (data) =>
+              `Found ${data.foundCount} quantifiable results.`,
+            getDetailedMessage: (data) => {
+              if (data.foundCount > 3)
+                return `<p class='text-xs text-gray-400'><strong>Why it's good:</strong> You've included several measurable results (using %, $, or numbers). This demonstrates your impact far more effectively than a simple list of duties.</p>`;
+              return `<p class='text-xs text-gray-400'><strong>Why it matters:</strong> Recruiters want to see accomplishments, not just responsibilities. Using metrics proves your impact and sets you apart.</p><p class='text-xs text-gray-400 mt-2'><strong>How to fix it:</strong> Review your bullet points. Instead of "Managed a team," try "Led a team of 5 to increase productivity by 15%." Quantify achievements wherever possible.</p>`;
+            },
+          },
+        };
+
+        const cardsToDisplay =
+          mode === "match-jd"
+            ? Object.keys(cards)
+            : [
+                "skills",
+                "experience",
+                "achievements",
+                "formatting",
+                "education",
+              ];
+
+        cardsToDisplay.forEach((key, index) => {
+          if (analysis[key]) {
+            const cardElement = createAnalysisItem(
+              cards[key],
+              analysis[key],
+              index
+            );
+            analysisGrid.appendChild(cardElement);
+          }
+        });
+
+        if (
+          mode === "match-jd" &&
+          analysis.keywords &&
+          (analysis.keywords.matched.all.length > 0 ||
+            analysis.keywords.missing.all.length > 0)
+        ) {
+          keywordSection.classList.remove("hidden");
+          populatePills(
+            "matched-keywords",
+            analysis.keywords.matched.all,
+            true
+          );
+          populatePills(
+            "missing-keywords",
+            analysis.keywords.missing.all,
+            false
+          );
+        } else {
+          keywordSection.classList.add("hidden");
+        }
+
+        resultsPlaceholder.classList.add("hidden");
+        resultsContent.classList.remove("hidden");
+        resultsContent.classList.add("fade-in");
+      }
+
+      function createAnalysisItem(cardInfo, data, index) {
+        const item = document.createElement("div");
+        const score = data.score;
+        let icon, colorClass;
+        if (score >= 80) {
+          colorClass = "text-green-400";
+          icon = `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`;
+        } else if (score >= 60) {
+          colorClass = "text-yellow-400";
+          icon = `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.636-1.21 2.37-1.21 3.006 0l5.429 10.372c.636 1.21-.24 2.779-1.503 2.779H4.33c-1.263 0-2.139-1.568-1.503-2.779L8.257 3.099zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>`;
+        } else {
+          colorClass = "text-red-400";
+          icon = `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>`;
+        }
+
+        item.className = "analysis-item rounded-lg overflow-hidden";
+        item.style.animationDelay = `${index * 100 + 300}ms`;
+        item.innerHTML = `
+                <div class="flex items-center p-3 cursor-pointer" onclick="toggleDetails(this)">
+                    <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center ${colorClass}">
+                        ${icon}
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-semibold text-gray-100">${
+                          cardInfo.title
+                        }</p>
+                        <p class="text-xs text-gray-400">${cardInfo.getMessage(
+                          data
+                        )}</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 transition-transform transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </div>
+                <div class="detailed-analysis">
+                     <div class="px-4 pb-3 border-t border-gray-700 pt-3">
+                        ${cardInfo.getDetailedMessage(data)}
+                    </div>
+                </div>
+            `;
+        return item;
+      }
+
+      function populatePills(containerId, keywords, isMatched) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+        if (keywords.length > 0) {
+          keywords
+            .slice(0, 15)
+            .forEach((kw) =>
+              container.appendChild(createKeywordPill(kw, isMatched))
+            );
+        } else {
+          container.innerHTML = `<p class="text-xs text-gray-400 italic">None found.</p>`;
+        }
+      }
+      function createKeywordPill(keyword, isMatched) {
+        const pill = document.createElement("span");
+        pill.textContent = keyword;
+        pill.className = `px-2.5 py-1 text-xs font-medium rounded-full ${
+          isMatched ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"
+        }`;
+        return pill;
+      }
+
+      // --- Helpers ---
+      function showError(message) {
+        errorElement.textContent = message;
+        errorElement.classList.remove("hidden");
+      }
+      function hideError() {
+        errorElement.classList.add("hidden");
+      }
+      function animateValue(obj, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          obj.innerHTML = Math.floor(progress * (end - start) + start);
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          }
+        };
+        window.requestAnimationFrame(step);
+      }
+      function toggleDetails(element) {
+        const detailsContainer = element.nextElementSibling;
+        const chevron = element.querySelector("svg:last-child");
+        if (
+          detailsContainer.style.maxHeight &&
+          detailsContainer.style.maxHeight !== "0px"
+        ) {
+          detailsContainer.style.maxHeight = "0px";
+          chevron.style.transform = "rotate(0deg)";
+        } else {
+          detailsContainer.style.maxHeight =
+            detailsContainer.scrollHeight + "px";
+          chevron.style.transform = "rotate(180deg)";
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Resources - Improvyu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- Global Dark Theme Styles --- */
+        body {
+            background-color: #0a0a0a;
+            color: #fff;
+            font-family: "Inter", sans-serif;
+        }
+
+        .rainbow-text {
+            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: rainbow-animation 5s linear infinite;
+        }
+
+        @keyframes rainbow-animation {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        .glass-card {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- Custom Styles for this Page --- */
+        .section-nav a {
+            transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+
+        .section-nav a.active {
+            color: #c471ed; /* A nice purple for active state */
+            border-bottom-color: #c471ed;
+        }
+        
+        .page-content { 
+            display: none; /* Initially hidden, managed by JS */ 
+        }
+        
+        input, select {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        input:focus, select:focus {
+            outline: none;
+            --tw-ring-color: #c471ed;
+            border-color: #c471ed;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="relative z-20 p-4 bg-black/20 backdrop-blur-sm border-b border-white/10">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <h1 class="text-2xl font-extrabold text-white tracking-wider">IMPROVYU</h1>
+            </div>
+            <a href="index.html" class="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition">Back to Home</a>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <div class="glass-card rounded-xl p-6 md:p-10">
+            <header class="text-center mb-10">
+                <p id="current-page-name" class="font-semibold text-purple-300">Resume Guides</p>
+                <h1 class="text-4xl md:text-5xl font-extrabold mt-2 rainbow-text">Placement Preparation Resources</h1>
+                <nav class="section-nav border-b border-white/10 mt-8 flex justify-center gap-4 md:gap-8">
+                    <a onclick="showPage('resume-guides', this)" class="text-gray-300 hover:text-white font-semibold pb-2 border-b-2 border-transparent cursor-pointer">Resume Guides</a>
+                    <a onclick="showPage('interview-tips', this)" class="text-gray-300 hover:text-white font-semibold pb-2 border-b-2 border-transparent cursor-pointer">Interview Tips</a>
+                    <a onclick="showPage('company-profiles', this)" class="text-gray-300 hover:text-white font-semibold pb-2 border-b-2 border-transparent cursor-pointer">Company Profiles</a>
+                    <a onclick="showPage('job-boards', this)" class="text-gray-300 hover:text-white font-semibold pb-2 border-b-2 border-transparent cursor-pointer">Job Boards</a>
+                </nav>
+            </header>
+
+            <main id="resume-guides" class="page-content animate-fade-in">
+                <section class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-white mb-4">Crafting Your Winning Resume</h2>
+                    <p class="text-lg text-gray-300">Your resume is your primary marketing document. A well-crafted resume can be the key to landing an interview. This guide provides the tools, templates, and tips you need to build a resume that stands out.</p>
+                </section>
+    
+                <div class="grid md:grid-cols-2 gap-8 mt-12 items-start">
+                    <div class="space-y-6">
+                        <h3 class="text-2xl font-semibold text-purple-300 border-b border-purple-500/30 pb-2">Anatomy of a Great Resume</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-300">
+                            <li><strong>Contact Information:</strong> Name, Phone, Professional Email, LinkedIn URL, Portfolio/GitHub link.</li>
+                            <li><strong>Professional Summary:</strong> A 2-3 line snapshot of your key skills and accomplishments.</li>
+                            <li><strong>Education:</strong> University, Degree, Major, Graduation Date, and GPA (if high).</li>
+                            <li><strong>Experience:</strong> Use 3-5 bullet points per role describing your achievements, not just duties.</li>
+                            <li><strong>Projects:</strong> Showcase practical skills with academic or personal projects.</li>
+                            <li><strong>Skills:</strong> A categorized list of your technical and soft skills.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-white/10">
+                        <h3 class="text-xl font-semibold text-purple-300 mb-3">Using the STAR Method for Impact</h3>
+                        <p class="text-gray-400 mb-4">Don't just list your duties. Showcase your accomplishments with the STAR method (Situation, Task, Action, Result).</p>
+                        <p class="text-sm text-gray-500 italic">Weak: "Responsible for managing social media."</p>
+                        <p class="mt-2 text-sm text-white"><strong class="text-purple-300">Strong (STAR):</strong> "Increased social media engagement by 35% over six months (Result) by developing and implementing a new content calendar (Action)..."</p>
+                    </div>
+                </div>
+
+                <section class="mt-12">
+                    <h3 class="text-2xl font-semibold text-purple-300 border-b border-purple-500/30 pb-2 mb-6">Templates & Resources</h3>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="#" class="block bg-gray-800/50 p-5 rounded-lg border border-gray-700 hover:border-purple-400 hover:bg-gray-800 transition">
+                            <h4 class="font-bold text-white">University Resume Template</h4>
+                            <p class="text-sm text-gray-400 mt-1">Our recommended format (.docx)</p>
+                        </a>
+                        <a href="#" class="block bg-gray-800/50 p-5 rounded-lg border border-gray-700 hover:border-purple-400 hover:bg-gray-800 transition">
+                             <h4 class="font-bold text-white">Template for Technical Roles</h4>
+                            <p class="text-sm text-gray-400 mt-1">Optimized for developers & engineers (.docx)</p>
+                        </a>
+                        <a href="#" class="block bg-gray-800/50 p-5 rounded-lg border border-gray-700 hover:border-purple-400 hover:bg-gray-800 transition">
+                            <h4 class="font-bold text-white">Guide to Action Verbs</h4>
+                            <p class="text-sm text-gray-400 mt-1">Make your bullet points powerful (PDF)</p>
+                        </a>
+                    </div>
+                </section>
+            </main>
+            
+            <main id="interview-tips" class="page-content">
+                 <section class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-white mb-4">Ace Your Next Interview</h2>
+                    <p class="text-lg text-gray-300">An interview is your chance to bring your resume to life and prove you're the best fit for the role. Preparation is the key to confidence.</p>
+                </section>
+
+                <div class="grid md:grid-cols-3 gap-8 mt-12">
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-white/10">
+                        <h3 class="text-xl font-semibold text-purple-300 mb-3">1. Before the Interview</h3>
+                         <ul class="list-disc list-inside space-y-2 text-gray-300">
+                             <li>Research the company</li>
+                             <li>Analyze the job description</li>
+                             <li>Prepare STAR method stories</li>
+                             <li>Know your "Why?"</li>
+                             <li>Prepare questions for them</li>
+                         </ul>
+                    </div>
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-white/10">
+                        <h3 class="text-xl font-semibold text-purple-300 mb-3">2. During the Interview</h3>
+                         <ul class="list-disc list-inside space-y-2 text-gray-300">
+                             <li>Dress professionally</li>
+                             <li>Use positive body language</li>
+                             <li>Listen carefully before answering</li>
+                             <li>Clearly articulate your thoughts</li>
+                         </ul>
+                    </div>
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-white/10">
+                        <h3 class="text-xl font-semibold text-purple-300 mb-3">3. After the Interview</h3>
+                         <ul class="list-disc list-inside space-y-2 text-gray-300">
+                             <li>Send a thank-you email within 24 hours</li>
+                             <li>Reiterate your interest</li>
+                             <li>Mention a specific, positive detail</li>
+                             <li>Be patient and professional</li>
+                         </ul>
+                    </div>
+                </div>
+            </main>
+
+            <main id="company-profiles" class="page-content">
+                <section class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-white mb-4">Explore Top Companies</h2>
+                    <p class="text-lg text-gray-300">Finding the right company is just as important as finding the right role. Use these profiles to discover company cultures, interview processes, and available opportunities.</p>
+                </section>
+                
+                <div class="glass-card my-10 p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-white">Search & Filter</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <input type="text" id="company-search" placeholder="Search by Company or Industry..." class="md:col-span-3 rounded-lg p-3">
+                        <select id="location-filter" class="rounded-lg p-3">
+                            <option>All Locations</option>
+                            <option>Mumbai</option>
+                            <option>Pune</option>
+                            <option>Bengaluru</option>
+                            <option>Remote</option>
+                        </select>
+                        <select id="hiring-for-filter" class="rounded-lg p-3">
+                            <option>All Types</option>
+                            <option>Internships</option>
+                            <option>Full-Time</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center">
+                        <img src="https://placehold.co/120x120/0A0A0A/FFFFFF?text=TCS" alt="Company Logo" class="w-16 h-16 rounded-full mb-4">
+                        <h3 class="text-xl font-bold text-white">Tata Consultancy</h3>
+                        <p class="text-gray-400 text-sm mt-2 flex-grow">Global leader in IT services, consulting, and business solutions.</p>
+                        <a href="#" class="mt-4 text-purple-300 font-semibold hover:underline">View Profile & Roles</a>
+                    </div>
+                    <div class="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center">
+                        <img src="https://placehold.co/120x120/0A0A0A/FFFFFF?text=RIL" alt="Company Logo" class="w-16 h-16 rounded-full mb-4">
+                        <h3 class="text-xl font-bold text-white">Reliance Industries</h3>
+                        <p class="text-gray-400 text-sm mt-2 flex-grow">India's largest conglomerate with interests in telecom, retail, and more.</p>
+                        <a href="#" class="mt-4 text-purple-300 font-semibold hover:underline">View Profile & Roles</a>
+                    </div>
+                    <div class="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center">
+                        <img src="https://placehold.co/120x120/0A0A0A/FFFFFF?text=INFY" alt="Company Logo" class="w-16 h-16 rounded-full mb-4">
+                        <h3 class="text-xl font-bold text-white">Infosys</h3>
+                        <p class="text-gray-400 text-sm mt-2 flex-grow">Global consulting and IT services company with a strong focus on training.</p>
+                        <a href="#" class="mt-4 text-purple-300 font-semibold hover:underline">View Profile & Roles</a>
+                    </div>
+                </div>
+            </main>
+            
+            <main id="job-boards" class="page-content">
+                <section class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-white mb-4">Exclusive Job & Internship Board</h2>
+                    <p class="text-lg text-gray-300">This is your central hub for finding curated opportunities for students and alumni.</p>
+                </section>
+
+                <div class="glass-card my-10 p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-white">Find Your Next Opportunity</h3>
+                     <div class="grid md:grid-cols-3 gap-4">
+                        <input type="text" id="job-search" placeholder="Search by Job Title or Skill..." class="md:col-span-3 rounded-lg p-3">
+                        <select id="job-type-filter" class="rounded-lg p-3">
+                            <option>All Types</option>
+                            <option>Full-Time</option>
+                            <option>Internship</option>
+                        </select>
+                         <select id="job-location-filter" class="rounded-lg p-3">
+                            <option>All Locations</option>
+                            <option>Mumbai</option>
+                            <option>Pune</option>
+                            <option>Bengaluru</option>
+                            <option>Remote</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-gray-800/50 p-4 md:p-6 rounded-lg border border-gray-700 md:flex items-center justify-between gap-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-white">Software Development Engineer Intern</h4>
+                            <p class="text-gray-400">Amazon - Bengaluru, KA</p>
+                        </div>
+                        <div class="flex items-center gap-4 mt-3 md:mt-0 text-sm">
+                            <span class="bg-blue-900/50 text-blue-200 px-3 py-1 rounded-full">Internship</span>
+                            <span class="text-gray-400">Posted: 1 day ago</span>
+                        </div>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition w-full md:w-auto mt-4 md:mt-0">View Details</button>
+                    </div>
+                     <div class="bg-gray-800/50 p-4 md:p-6 rounded-lg border border-gray-700 md:flex items-center justify-between gap-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-white">Business Analyst</h4>
+                            <p class="text-gray-400">Deloitte - Mumbai, MH</p>
+                        </div>
+                         <div class="flex items-center gap-4 mt-3 md:mt-0 text-sm">
+                            <span class="bg-green-900/50 text-green-200 px-3 py-1 rounded-full">Full-Time</span>
+                            <span class="text-gray-400">Posted: 3 days ago</span>
+                        </div>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition w-full md:w-auto mt-4 md:mt-0">View Details</button>
+                    </div>
+                     <div class="bg-gray-800/50 p-4 md:p-6 rounded-lg border border-gray-700 md:flex items-center justify-between gap-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-white">Data Science Trainee</h4>
+                            <p class="text-gray-400">Infosys - Pune, MH</p>
+                        </div>
+                         <div class="flex items-center gap-4 mt-3 md:mt-0 text-sm">
+                            <span class="bg-green-900/50 text-green-200 px-3 py-1 rounded-full">Full-Time</span>
+                            <span class="text-gray-400">Posted: 5 days ago</span>
+                        </div>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition w-full md:w-auto mt-4 md:mt-0">View Details</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const navLinks = document.querySelectorAll('.section-nav a');
+        const breadcrumbSpan = document.getElementById('current-page-name');
+        let activeLink = navLinks[0];
+
+        function showPage(pageId, clickedLink) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            document.getElementById(pageId).style.display = 'block';
+
+            // If a link was clicked, update the active state
+            if (clickedLink) {
+                 if (activeLink) {
+                    activeLink.classList.remove('active');
+                }
+                clickedLink.classList.add('active');
+                activeLink = clickedLink;
+                breadcrumbSpan.textContent = clickedLink.textContent;
+            } else {
+                // If called programmatically (from a button), find the correct nav link to activate
+                 if (activeLink) {
+                    activeLink.classList.remove('active');
+                }
+                navLinks.forEach(link => {
+                    if (link.getAttribute('onclick').includes(pageId)) {
+                        link.classList.add('active');
+                        activeLink = link;
+                        breadcrumbSpan.textContent = link.textContent;
+                    }
+                });
+            }
+
+            // Scroll to top of the content area
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('resume-guides', navLinks[0]);
+        });
+    </script>
+</body>
+</html>
