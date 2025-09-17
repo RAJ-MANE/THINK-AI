@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improvyu - AI Training & Placement Platform</title> <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">IMPROVYU</div>
+            <ul class="nav-links">
+                <li><a href="#">HOME</a></li>
+                <li><a href="#">TRAINING PROGRAMS</a></li>
+                <li><a href="#">PLACEMENT RESOURCES</a></li>
+                <li><a href="#">JOB BOARD</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <button class="btn-secondary">SIGN IN</button>
+                <button class="btn-primary">SIGN UP</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero-section">
+            <h1 class="rainbow-text">IMPROVYU: YOUR AI-POWERED</h1>
+            <h1 class="rainbow-text">TRAINING & PLACEMENT</h1>
+            <h1 class="rainbow-text">CONNECTION PLATFORM</h1>
+        </section>
+
+        <section id="lenora-section" class="lenora-section hidden">
+            <h2 class="rainbow-text">MEET LENORA, YOUR AI</h2>
+            <h2 class="rainbow-text">COMPANION FOR THIS JOURNEY</h2>
+
+            <form id="resume-form">
+                <div class="form-group tools-group">
+                    <p>+ TOOLS</p>
+                    <div class="tools-options">
+                        <button type="button" class="tool-btn" data-tool="ats">AI RESUME SCANNER</button>
+                        <button type="button" class="tool-btn" data-tool="placement">PLACEMENT RESOURCES</button>
+                        <button type="button" class="tool-btn active" data-tool="interview">AI INTERVIEW PRACTICE</button>
+                    </div>
+                </div>
+
+                <button type="submit" id="main-action-btn" class="animated-rainbow-button">
+                    <div>
+                        <span>Start AI Interview Practice</span>
+                    </div>
+                </button>
+            </form>
+
+            <div id="loading-indicator" style="display: none; margin-top: 20px;">
+                <p>Analyzing resume and preparing your session... Please wait.</p> <div class="spinner"></div>
+            </div>
+            <div id="error-message" class="error-text"></div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
